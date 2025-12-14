@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Quiz App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Floating icons -->
+  <div class="floating-icon">📚</div>
+  <div class="floating-icon">🎯</div>
+  <div class="floating-icon">🧠</div>
+  <div class="floating-icon">💡</div>
+  <div class="floating-icon">🚀</div>
+  <div class="floating-icon">🏆</div>
+  <div class="floating-icon">⭐</div>
+  <div class="floating-icon">🎓</div>
+  <div class="floating-icon">🔥</div>
+  <div class="floating-icon">💎</div>
+  <div class="floating-icon">🎪</div>
+  <div class="floating-icon">🎨</div>
+  <div class="floating-icon">📖</div>
+  <div class="floating-icon">🌟</div>
+  <div class="floating-icon">🎭</div>
+  <div class="floating-icon">🏅</div>
+  <div class="floating-icon">✨</div>
+  <div class="floating-icon">🎯</div>
+  <div class="floating-icon">💫</div>
+  <div class="floating-icon">🎊</div>
+
+  <div class="quiz-container">
+
+    <!-- Category Selection Screen -->
+    <div id="category-screen" class="screen">
+      <h1>Quiz App</h1>
+      <h2>Select a Category</h2>
+      <button id="show-leaderboard" class="leaderboard-btn">Leaderboard</button>
+      <div class="player-entry">
+        <input id="player-name" placeholder="Enter your name" />
+        <button id="set-username">Register</button>
+        <button id="clear-username">Clear</button>
+      </div>
+      <div id="registered-user-display" class="registered-user"></div>
+      <div id="register-msg" class="register-msg"></div>
+      <div id="categories" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin: 0; padding: 0;">
+        <button class="category-btn" data-category="ICT">ICT</button>
+        <button class="category-btn" data-category="Politics">Politics</button>
+        <button class="category-btn" data-category="Football">Football</button>
+        <button class="category-btn" data-category="Science">Science &amp; Nature</button>
+        <button class="category-btn" data-category="Mathematics">Mathematics</button>
+        <button class="category-btn" data-category="Geography">Geography</button>
+        <button class="category-btn" data-category="History">History</button>
+        <button class="category-btn" data-category="Animals">Animals</button>
+      </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quiz" class="screen" style="display:none">
+      <div class="progress-bar">
+        <div id="progress" style="width: 0%;"></div>
+      </div>
+      <div id="timer" class="timer">10</div>
+      <div id="player-display" class="player-display"></div>
+      <div class="question-card">
+        <div id="question">Question text</div>
+        <ul id="options"></ul>
+      </div>
+      <div class="controls">
+        <button id="next" disabled>Next</button>
+      </div>
+      <div id="result"></div>
+    </div>
+
+    <div id="leaderboard-screen" class="screen" style="display:none">
+      <h2>Leaderboard</h2>
+      <ul id="leaderboard-list"></ul>
+      <div class="leaderboard-controls">
+        <button id="close-leaderboard">Back</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
