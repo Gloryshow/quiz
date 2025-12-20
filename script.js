@@ -1,4 +1,18 @@
+// Import Firebase utilities
+import { 
+  signUp, 
+  signIn, 
+  logOut, 
+  getUserData, 
+  updateUserCoins, 
+  updatePerfectScores, 
+  saveQuizResult, 
+  getLeaderboard, 
+  onAuthChange 
+} from './firebase-utils.js';
+
 // DOM Elements
+const authScreen = document.getElementById('auth-screen');
 const categoryScreen = document.getElementById('category-screen');
 const quizScreen = document.getElementById('quiz-screen');
 const resultScreen = document.getElementById('result-screen');
@@ -45,6 +59,7 @@ let currentPlayer = '';
 let currentCategory = '';
 let timerInterval = null;
 let timeLeft = 15; // 15 seconds per question
+let currentUser = null; // Firebase user
 
 // Category Map
 const categoryMap = {
@@ -103,6 +118,7 @@ function decodeHtml(html) {
 }
 
 function showScreen(screen) {
+  authScreen.classList.remove('active');
   categoryScreen.classList.remove('active');
   quizScreen.classList.remove('active');
   resultScreen.classList.remove('active');
@@ -110,6 +126,88 @@ function showScreen(screen) {
   rulesScreen.classList.remove('active');
   screen.classList.add('active');
 }
+
+// Auth Tab Switching
+document.querySelectorAll('.auth-tab').forEach(tab => {
+  tab.addEventListener('click', (e) => {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(`${e.target.dataset.tab}-form`).classList.add('active');
+  });
+});
+
+// Login Handler
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const loginMsg = document.getElementById('login-msg');
+
+  if (!email || !password) {
+    loginMsg.textContent = 'Please enter email and password';
+    loginMsg.style.color = '#ff4b4b';
+    return;
+  }
+
+  try {
+    loginMsg.textContent = 'Logging in...';
+    loginMsg.style.color = '#00c8a7';
+    await signIn(email, password);
+    loginMsg.textContent = 'Login successful!';
+    setTimeout(() => {
+      showScreen(categoryScreen);
+    }, 1000);
+  } catch (error) {
+    loginMsg.textContent = error.message || 'Login failed';
+    loginMsg.style.color = '#ff4b4b';
+  }
+});
+
+// Sign Up Handler
+document.getElementById('signup-btn').addEventListener('click', async () => {
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value.trim();
+  const signupMsg = document.getElementById('signup-msg');
+
+  if (!username || !email || !password) {
+    signupMsg.textContent = 'Please fill all fields';
+    signupMsg.style.color = '#ff4b4b';
+    return;
+  }
+
+  if (password.length < 6) {
+    signupMsg.textContent = 'Password must be at least 6 characters';
+    signupMsg.style.color = '#ff4b4b';
+    return;
+  }
+
+  try {
+    signupMsg.textContent = 'Creating account...';
+    signupMsg.style.color = '#00c8a7';
+    await signUp(email, password, username);
+    signupMsg.textContent = 'Account created! Logging in...';
+    setTimeout(() => {
+      showScreen(categoryScreen);
+    }, 1500);
+  } catch (error) {
+    signupMsg.textContent = error.message || 'Sign up failed';
+    signupMsg.style.color = '#ff4b4b';
+  }
+});
+
+// Monitor Auth State
+onAuthChange((user) => {
+  if (user) {
+    currentUser = user;
+    currentPlayer = user.email;
+  } else {
+    currentUser = null;
+    showScreen(authScreen);
+  }
+});
+
+
 
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
@@ -341,6 +439,23 @@ function showResult() {
   if (score === selectedQuestions.length) {
     addQuestionsDone(1);
   }
+
+  // Save quiz result to Firestore
+  if (currentUser) {
+    saveQuizResult(currentUser.uid, {
+      category: currentCategory,
+      score: score,
+      totalQuestions: selectedQuestions.length,
+      coinsEarned: coinsEarned,
+      percentage: percentage
+    });
+    
+    // Update user coins and perfect scores in Firestore
+    updateUserCoins(currentUser.uid, getCoins());
+    if (score === selectedQuestions.length) {
+      updatePerfectScores(currentUser.uid, getTotalQuestionsDone());
+    }
+  }
   
   showScreen(resultScreen);
 }
@@ -372,8 +487,34 @@ backHomeBtn.addEventListener('click', () => {
 });
 
 // Leaderboard
-leaderboardBtn.addEventListener('click', () => {
-  showScreen(leaderboardScreen);
+leaderboardBtn.addEventListener('click', async () => {
+  try {
+    const leaderboard = await getLeaderboard(100);
+    const leaderboardList = document.getElementById('leaderboard-list');
+    
+    if (leaderboardList) {
+      leaderboardList.innerHTML = '';
+      
+      if (leaderboard.length === 0) {
+        leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
+      } else {
+        leaderboard.forEach((user, index) => {
+          const row = document.createElement('div');
+          row.className = 'leaderboard-row';
+          row.innerHTML = `
+            <span class="rank">#${index + 1}</span>
+            <span class="name">${user.displayName || user.email}</span>
+            <span class="score">${user.perfectScores} ⭐</span>
+            <span class="coins">${user.coins} 🪙</span>
+          `;
+          leaderboardList.appendChild(row);
+        });
+      }
+    }
+    showScreen(leaderboardScreen);
+  } catch (error) {
+    console.error('Error loading leaderboard:', error);
+  }
 });
 
 closeLeaderboardBtn.addEventListener('click', () => {
