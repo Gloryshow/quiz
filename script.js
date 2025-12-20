@@ -19,29 +19,6 @@ const resultScreen = document.getElementById('result-screen');
 const leaderboardScreen = document.getElementById('leaderboard-screen');
 const rulesScreen = document.getElementById('rules-screen');
 
-const playerNameInput = document.getElementById('player-name');
-const setUsernameBtn = document.getElementById('set-username');
-const clearUsernameBtn = document.getElementById('clear-username');
-const registeredUserDisplay = document.getElementById('registered-user-display');
-const registerMsg = document.getElementById('register-msg');
-
-const categoryItems = document.querySelectorAll('.category-item');
-const leaderboardBtn = document.getElementById('leaderboard-btn');
-const closeLeaderboardBtn = document.getElementById('close-leaderboard');
-const leaderboardBackBtn = document.getElementById('leaderboard-back-btn');
-const rulesBtn = document.getElementById('rules-btn');
-const closeRulesBtn = document.getElementById('close-rules');
-const rulesBackBtn = document.getElementById('rules-back-btn');
-
-const questionEl = document.getElementById('question');
-const questionNumberEl = document.getElementById('question-number');
-const optionsEl = document.getElementById('options');
-const quizCategoryEl = document.getElementById('quiz-category');
-const quizTimerEl = document.getElementById('quiz-timer');
-const progressFillEl = document.getElementById('progress-fill');
-const nextBtn = document.getElementById('next');
-const closeQuizBtn = document.getElementById('close-quiz');
-
 const scorePercentageEl = document.getElementById('score-percentage');
 const resultDetailTextEl = document.getElementById('result-detail-text');
 const shareBtn = document.getElementById('share-btn');
@@ -50,6 +27,7 @@ const backHomeBtn = document.getElementById('back-home-btn');
 
 const questionsDoneEl = document.getElementById('questions-done');
 const coinsBalanceEl = document.getElementById('coins-balance');
+const userDisplayEl = document.getElementById('user-display');
 
 // State
 let currentQuestionIndex = 0;
@@ -74,14 +52,6 @@ const categoryMap = {
 };
 
 // Utility Functions
-function getRegisteredUser() {
-  return localStorage.getItem('registeredUser') || '';
-}
-
-function setRegisteredUser(name) {
-  localStorage.setItem('registeredUser', name);
-}
-
 function getCoins() {
   return parseInt(localStorage.getItem('coins') || '0', 10);
 }
@@ -127,71 +97,98 @@ function showScreen(screen) {
   screen.classList.add('active');
 }
 
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
 // Auth Tab Switching
-document.querySelectorAll('.auth-tab').forEach(tab => {
-  tab.addEventListener('click', (e) => {
-    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    e.target.classList.add('active');
-    document.getElementById(`${e.target.dataset.tab}-form`).classList.add('active');
+const authTabs = document.querySelectorAll('.auth-tab');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+const loginBtn = document.getElementById('login-btn');
+const signupBtn = document.getElementById('signup-btn');
+const loginMsg = document.getElementById('login-msg');
+const signupMsg = document.getElementById('signup-msg');
+
+authTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    authTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    if (tab.dataset.tab === 'login') {
+      loginForm.classList.add('active');
+      signupForm.classList.remove('active');
+    } else {
+      signupForm.classList.add('active');
+      loginForm.classList.remove('active');
+    }
   });
 });
 
-// Login Handler
-document.getElementById('login-btn').addEventListener('click', async () => {
+// Login
+loginBtn.addEventListener('click', async () => {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value.trim();
-  const loginMsg = document.getElementById('login-msg');
-
+  
   if (!email || !password) {
-    loginMsg.textContent = 'Please enter email and password';
+    loginMsg.textContent = '❌ Please enter email and password';
     loginMsg.style.color = '#ff4b4b';
     return;
   }
-
+  
   try {
-    loginMsg.textContent = 'Logging in...';
+    loginMsg.textContent = '⏳ Logging in...';
+    loginMsg.style.color = '#ffa500';
+    
+    const user = await signIn(email, password);
+    loginMsg.textContent = '✅ Login successful!';
     loginMsg.style.color = '#00c8a7';
-    await signIn(email, password);
-    loginMsg.textContent = 'Login successful!';
+    
     setTimeout(() => {
       showScreen(categoryScreen);
     }, 1000);
   } catch (error) {
-    loginMsg.textContent = error.message || 'Login failed';
+    loginMsg.textContent = `❌ ${error.message}`;
     loginMsg.style.color = '#ff4b4b';
   }
 });
 
-// Sign Up Handler
-document.getElementById('signup-btn').addEventListener('click', async () => {
+// Sign Up
+signupBtn.addEventListener('click', async () => {
   const username = document.getElementById('signup-username').value.trim();
   const email = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value.trim();
-  const signupMsg = document.getElementById('signup-msg');
-
+  
   if (!username || !email || !password) {
-    signupMsg.textContent = 'Please fill all fields';
+    signupMsg.textContent = '❌ Please fill all fields';
     signupMsg.style.color = '#ff4b4b';
     return;
   }
-
+  
   if (password.length < 6) {
-    signupMsg.textContent = 'Password must be at least 6 characters';
+    signupMsg.textContent = '❌ Password must be at least 6 characters';
     signupMsg.style.color = '#ff4b4b';
     return;
   }
-
+  
   try {
-    signupMsg.textContent = 'Creating account...';
+    signupMsg.textContent = '⏳ Creating account...';
+    signupMsg.style.color = '#ffa500';
+    
+    const user = await signUp(email, password, username);
+    signupMsg.textContent = '✅ Account created! Logging in...';
     signupMsg.style.color = '#00c8a7';
-    await signUp(email, password, username);
-    signupMsg.textContent = 'Account created! Logging in...';
+    
+    currentPlayer = username;
+    currentUser = user;
+    
     setTimeout(() => {
       showScreen(categoryScreen);
-    }, 1500);
+    }, 1000);
   } catch (error) {
-    signupMsg.textContent = error.message || 'Sign up failed';
+    signupMsg.textContent = `❌ ${error.message}`;
     signupMsg.style.color = '#ff4b4b';
   }
 });
@@ -200,68 +197,24 @@ document.getElementById('signup-btn').addEventListener('click', async () => {
 onAuthChange((user) => {
   if (user) {
     currentUser = user;
-    currentPlayer = user.email;
+    currentPlayer = user.displayName || user.email.split('@')[0];
+    userDisplayEl.textContent = `👤 ${currentPlayer}`;
+    showScreen(categoryScreen);
   } else {
-    currentUser = null;
     showScreen(authScreen);
   }
 });
 
-
-
-function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Registration
-setUsernameBtn.addEventListener('click', () => {
-  const username = playerNameInput.value.trim();
-  if (!username) {
-    registerMsg.textContent = 'Please enter a username';
-    registerMsg.style.display = 'block';
-    registerMsg.style.color = '#ff4b4b';
-    return;
-  }
-  setRegisteredUser(username);
-  currentPlayer = username;
-  registeredUserDisplay.textContent = `✓ Registered as: ${username}`;
-  registeredUserDisplay.style.display = 'block';
-  registerMsg.textContent = 'Username registered successfully!';
-  registerMsg.style.display = 'block';
-  registerMsg.style.color = '#00c8a7';
-  setTimeout(() => {
-    registerMsg.style.display = 'none';
-  }, 3000);
-});
-
-clearUsernameBtn.addEventListener('click', () => {
-  playerNameInput.value = '';
-  registeredUserDisplay.style.display = 'none';
-  currentPlayer = '';
-  localStorage.removeItem('registeredUser');
-});
-
-// Check for existing registration
-window.addEventListener('DOMContentLoaded', () => {
-  const existing = getRegisteredUser();
-  if (existing) {
-    playerNameInput.value = existing;
-    currentPlayer = existing;
-    registeredUserDisplay.textContent = `✓ Registered as: ${existing}`;
-    registeredUserDisplay.style.display = 'block';
-  }
-  updateCoinsDisplay();
-  updateQuestionsDisplay();
-});
+// Quiz Logic
+updateCoinsDisplay();
+updateQuestionsDisplay();
 
 // Category Selection
+const categoryItems = document.querySelectorAll('.category-item');
 async function startQuiz(category) {
   if (!currentPlayer) {
-    registerMsg.textContent = 'Please register a username first!';
-    registerMsg.style.display = 'block';
-    registerMsg.style.color = '#ff4b4b';
+    console.error('Please login first!');
+    return;
     return;
   }
 
@@ -276,8 +229,7 @@ async function startQuiz(category) {
     const data = await response.json();
 
     if (data.response_code !== 0) {
-      registerMsg.textContent = 'Failed to load questions. Try another category.';
-      registerMsg.style.display = 'block';
+      console.error('Failed to load questions');
       return;
     }
 
@@ -285,8 +237,7 @@ async function startQuiz(category) {
     showScreen(quizScreen);
     loadQuestion();
   } catch (error) {
-    registerMsg.textContent = 'Error loading questions.';
-    registerMsg.style.display = 'block';
+    console.error('Error loading questions:', error);
   }
 }
 

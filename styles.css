@@ -17,10 +17,15 @@
 .header {
   background: linear-gradient(135deg, #1a2a3a 0%, #0d1b2a 100%);
   padding: 1rem;
-  display: flex;
+  display: none;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid rgba(255, 165, 0, 0.1);
+}
+
+/* Show header when auth screen is not active */
+#auth-screen:not(.active) ~ .header {
+  display: flex;
 }
 
 .header-left {
@@ -300,6 +305,22 @@
   text-align: center;
   display: none;
   font-size: 0.9rem;
+}
+
+.user-info {
+  background: rgba(0, 200, 167, 0.1);
+  border: 1px solid rgba(0, 200, 167, 0.3);
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.user-info p {
+  color: #00c8a7;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
 }
 
 .categories-list {

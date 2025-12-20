@@ -82,17 +82,12 @@
     </div>
 
     <!-- Category Screen -->
-    <div id="category-screen" class="screen active">
+    <div id="category-screen" class="screen">
       <div class="screen-container">
-        <h2>Select a Category</h2>
-        
-        <div class="player-section">
-          <input id="player-name" type="text" placeholder="Enter your name" class="player-input" />
-          <button id="set-username" class="btn-register">Register</button>
-          <button id="clear-username" class="btn-clear">Clear</button>
+        <div class="user-info">
+          <p id="user-display"></p>
         </div>
-        <div id="registered-user-display" class="registered-user"></div>
-        <div id="register-msg" class="register-msg"></div>
+        <h2>Select a Category</h2>
 
         <div class="categories-list">
           <button class="category-item" data-category="ICT">
@@ -230,6 +225,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
