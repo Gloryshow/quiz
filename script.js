@@ -65,6 +65,9 @@ const profilePreviewEmoji = document.getElementById('profile-preview-emoji');
 const saveProfileBtn = document.getElementById('save-profile-btn');
 const removeProfileBtn = document.getElementById('remove-profile-btn');
 
+const networkIndicatorSmall = document.getElementById('network-indicator-small');
+const networkStatus = document.getElementById('network-status');
+
 // State
 let currentQuestionIndex = 0;
 let score = 0;
@@ -75,6 +78,7 @@ let timerInterval = null;
 let timeLeft = 15; // 15 seconds per question
 let currentUser = null; // Firebase user
 let selectedProfilePictureBase64 = null; // Profile picture state
+let isOnline = navigator.onLine; // Network status
 
 // Category Map
 const categoryMap = {
@@ -520,14 +524,18 @@ closeQuizBtn.addEventListener('click', () => {
 
 // Result Actions
 shareBtn.addEventListener('click', () => {
-  const text = `I scored ${score} out of ${selectedQuestions.length} on the Quiz App! 🎉`;
+  const percentage = Math.round((score / selectedQuestions.length) * 100);
+  const text = `🏆 I just scored ${score}/${selectedQuestions.length} (${percentage}%) on QuizWave! 🎉\n\nTest your knowledge and compete with players worldwide on this amazing quiz platform!\n\n🚀 Play Now: https://quizwave.vercel.app/\n\n#QuizWave #Quiz #Challenge #Knowledge`;
+  
   if (navigator.share) {
     navigator.share({
-      title: 'Quiz App',
+      title: 'QuizWave - I scored ' + percentage + '%!',
       text: text,
     });
   } else {
-    alert(text);
+    // Fallback for browsers that don't support Web Share API
+    const shareText = `Check out my QuizWave score: ${percentage}%! Play now: https://quizwave.vercel.app/`;
+    alert(shareText);
   }
 });
 
@@ -547,16 +555,48 @@ if (leaderboardBtn) {
     try {
       const leaderboard = await getLeaderboard(100);
       const leaderboardList = document.getElementById('leaderboard-list');
+      const yourPositionSection = document.getElementById('your-position');
+      const yourRankEl = document.getElementById('your-rank');
+      const yourStatsEl = document.getElementById('your-stats');
       
       if (leaderboardList) {
         leaderboardList.innerHTML = '';
         
         if (leaderboard.length === 0) {
           leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
+          yourPositionSection.style.display = 'none';
         } else {
+          // Find current user in leaderboard
+          let userPosition = null;
+          leaderboard.forEach((user, index) => {
+            if (user.uid === currentUser.uid) {
+              userPosition = {
+                rank: index + 1,
+                displayName: user.displayName || user.email,
+                perfectScores: user.perfectScores,
+                coins: user.coins
+              };
+            }
+          });
+          
+          // Show user's position if they're in the leaderboard
+          if (userPosition) {
+            yourRankEl.textContent = `#${userPosition.rank} - ${userPosition.displayName}`;
+            yourStatsEl.textContent = `${userPosition.perfectScores} ⭐ • ${userPosition.coins} 🪙`;
+            yourPositionSection.style.display = 'block';
+          } else {
+            yourPositionSection.style.display = 'none';
+          }
+          
           leaderboard.forEach((user, index) => {
             const row = document.createElement('div');
             row.className = 'leaderboard-row';
+            
+            // Add highlight class if this is the current user
+            if (user.uid === currentUser.uid) {
+              row.classList.add('current-user');
+            }
+            
             row.innerHTML = `
               <span class="rank">#${index + 1}</span>
               <span class="name">${user.displayName || user.email}</span>
@@ -772,6 +812,52 @@ profileModal.addEventListener('click', (e) => {
     uploadBtn.style.display = 'block';
   }
 });
+
+// Network Status Monitoring
+function updateNetworkStatus() {
+  const indicatorDot = networkIndicatorSmall?.querySelector('.indicator-dot');
+  const networkIndicator = networkStatus?.querySelector('.network-indicator');
+  const networkText = networkStatus?.querySelector('.network-text');
+  
+  if (navigator.onLine) {
+    isOnline = true;
+    if (indicatorDot) {
+      indicatorDot.classList.remove('offline');
+    }
+    if (networkIndicator) {
+      networkIndicator.classList.remove('offline');
+    }
+    if (networkText) {
+      networkText.textContent = 'Good Connection';
+      networkText.classList.remove('offline');
+    }
+    if (networkStatus) {
+      networkStatus.classList.remove('offline');
+    }
+  } else {
+    isOnline = false;
+    if (indicatorDot) {
+      indicatorDot.classList.add('offline');
+    }
+    if (networkIndicator) {
+      networkIndicator.classList.add('offline');
+    }
+    if (networkText) {
+      networkText.textContent = 'Poor/No Connection';
+      networkText.classList.add('offline');
+    }
+    if (networkStatus) {
+      networkStatus.classList.add('offline');
+    }
+  }
+}
+
+// Listen for network status changes
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
+
+// Initialize network status on page load
+updateNetworkStatus();
 
 // Initialize displays on page load
 updateCoinsDisplay();

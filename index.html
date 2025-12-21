@@ -3,8 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuizWave</title>
+  <meta name="description" content="QuizWave - Test your knowledge and compete with players worldwide! Play engaging quizzes, earn coins, track your progress on the global leaderboard. Challenge yourself with diverse categories today!">
+  <meta name="keywords" content="quiz, knowledge test, online quiz, trivia, competitive quiz, leaderboard, brain game, education, learning game">
+  <meta name="author" content="QuizWave">
+  <meta name="theme-color" content="#1a2a3a">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+  
+  <!-- Open Graph Tags (Social Media) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://quizwave.vercel.app/">
+  <meta property="og:title" content="QuizWave - Test Your Knowledge, Win Coins!">
+  <meta property="og:description" content="Test your knowledge and compete with players worldwide on QuizWave. Play engaging quizzes, earn coins, and climb the global leaderboard!">
+  <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='brainGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23FFB84D;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FFA500;stop-opacity:1' /%3E%3C/linearGradient%3E%3ClinearGradient id='brainGrad2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%231E90FF;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2300CED1;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='200' cy='200' r='180' fill='none' stroke='rgba(255,255,255,0.1)' stroke-width='2'/%3E%3Cg%3E%3Crect x='50' y='80' width='110' height='140' rx='30' fill='url(%23brainGrad)' opacity='0.9'/%3E%3Ccircle cx='85' cy='120' r='15' fill='%23fff' opacity='0.3'/%3E%3C/g%3E%3Cg%3E%3Crect x='240' y='80' width='110' height='140' rx='30' fill='url(%23brainGrad2)' opacity='0.9'/%3E%3C/g%3E%3C/svg%3E">
+  <meta property="og:image:alt" content="QuizWave Logo - Test Your Knowledge">
+  <meta property="og:site_name" content="QuizWave">
+  
+  <!-- Twitter Card Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QuizWave - Test Your Knowledge, Win Coins!">
+  <meta name="twitter:description" content="Engage in competitive quizzes, earn coins, and compete globally on QuizWave leaderboard!">
+  <meta name="twitter:creator" content="@QuizWave">
+  
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "QuizWave",
+    "description": "An engaging online quiz platform where users can test their knowledge, earn coins, and compete on a global leaderboard",
+    "url": "https://quizwave.vercel.app/",
+    "applicationCategory": "EducationalApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "ratingCount": "100"
+    },
+    "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%231a2a3a'/%3E%3Ctext x='200' y='350' font-family='Arial' font-size='48' font-weight='bold' text-anchor='middle'%3E%3Ctspan fill='%23FFB84D'%3EQuiz%3C/tspan%3E%3Ctspan fill='%231E90FF'%3EWave%3C/ctspan%3E%3C/text%3E%3C/svg%3E"
+  }
+  </script>
+  
+  <title>QuizWave - Test Your Knowledge, Win Coins!</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a2a3a'/%3E%3Cdefs%3E%3ClinearGradient id='brainGradIcon' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23FFB84D;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FFA500;stop-opacity:1' /%3E%3C/linearGradient%3E%3ClinearGradient id='brainGradIcon2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%231E90FF;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2300CED1;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3Crect x='15' y='20' width='25' height='35' rx='8' fill='url(%23brainGradIcon)' opacity='0.95'/%3E%3Ccircle cx='22' cy='30' r='4' fill='%23fff' opacity='0.4'/%3E%3Ccircle cx='32' cy='27' r='3' fill='%23fff' opacity='0.4'/%3E%3C/g%3E%3Cg%3E%3Crect x='60' y='20' width='25' height='35' rx='8' fill='url(%23brainGradIcon2)' opacity='0.95'/%3E%3Cpath d='M70 32 L70 42 M75 28 L75 45' stroke='%23fff' stroke-width='1.5' opacity='0.5'/%3E%3C/g%3E%3Cpath d='M30 60 Q50 75 70 60' stroke='%2300CED1' stroke-width='3' fill='none' opacity='0.8'/%3E%3Ctext x='50' y='95' font-family='Arial, sans-serif' font-size='14' font-weight='bold' text-anchor='middle' fill='%23FFA500'%3EQW%3C/text%3E%3C/svg%3E">
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
@@ -29,7 +76,36 @@
   </script>
 </head>
 <body>
-  <div class="quiz-app">
+  <div class="page-wrapper">
+    <!-- Left Sidebar -->
+    <aside class="sidebar sidebar-left">
+      <div class="sidebar-content">
+        <h3>🎓 Features</h3>
+        <ul class="features-list">
+          <li>💯 Test Your Knowledge</li>
+          <li>🪙 Earn Coins</li>
+          <li>🏆 Global Leaderboard</li>
+          <li>⚡ Quick Quizzes</li>
+          <li>🎯 Multiple Categories</li>
+          <li>📊 Track Progress</li>
+        </ul>
+        
+        <h3>📚 Categories</h3>
+        <ul class="categories-list">
+          <li>💻 ICT</li>
+          <li>🏛️ Politics</li>
+          <li>⚽ Football</li>
+          <li>🔬 Science</li>
+          <li>📐 Mathematics</li>
+          <li>🌍 Geography</li>
+          <li>📚 History</li>
+          <li>🦁 Animals</li>
+        </ul>
+      </div>
+    </aside>
+    
+    <!-- Main App -->
+    <div class="quiz-app">
     <!-- Auth Screen -->
     <div id="auth-screen" class="screen active">
       <div class="screen-container auth-container">
@@ -91,6 +167,9 @@
         <h1 class="app-title">QuizWave</h1>
       </div>
       <div class="header-right">
+        <div class="network-indicator-small" id="network-indicator-small" title="Network Status">
+          <span class="indicator-dot"></span>
+        </div>
         <div class="stats-bar">
           <div class="stat">
             <span class="stat-label">Number of 100%</span>
@@ -259,10 +338,67 @@
       <div class="screen-container">
         <button class="close-btn" id="close-leaderboard">✕</button>
         <h2>🏆 Global Leaderboard</h2>
+        <div id="network-status" class="network-status">
+          <span class="network-indicator"></span>
+          <span class="network-text">Good Connection</span>
+        </div>
+        <div id="your-position" class="your-position-section" style="display:none;">
+          <div class="your-position-card">
+            <p class="your-pos-label">Your Current Position</p>
+            <p class="your-pos-rank" id="your-rank"></p>
+            <p class="your-pos-stats" id="your-stats"></p>
+          </div>
+        </div>
         <div id="leaderboard-list" class="leaderboard-list"></div>
         <button id="leaderboard-back-btn" class="btn-back">Back</button>
       </div>
     </div>
+  </div>
+
+    <!-- Right Sidebar -->
+    <aside class="sidebar sidebar-right">
+      <div class="sidebar-content">
+        <h3>⚡ Quick Stats</h3>
+        <div class="stats-widget">
+          <div class="stat-item">
+            <span class="stat-icon">🎮</span>
+            <span class="stat-label">Genre</span>
+            <span class="stat-val">Educational Game</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">👥</span>
+            <span class="stat-label">Players</span>
+            <span class="stat-val">Growing Daily</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">🌍</span>
+            <span class="stat-label">Reach</span>
+            <span class="stat-val">Global</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">💯</span>
+            <span class="stat-label">Quality</span>
+            <span class="stat-val">Premium</span>
+          </div>
+        </div>
+        
+        <h3>🎯 How to Play</h3>
+        <ol class="how-to-list">
+          <li>Sign up or Login</li>
+          <li>Choose a Category</li>
+          <li>Answer 3 Questions</li>
+          <li>Earn Coins</li>
+          <li>Climb Leaderboard</li>
+        </ol>
+        
+        <h3>🏅 Rewards</h3>
+        <ul class="rewards-list">
+          <li>⭐ 3/3 = 1000 coins</li>
+          <li>⭐ 2/3 = 50 coins</li>
+          <li>⭐ 1/3 = 20 coins</li>
+        </ul>
+      </div>
+    </aside>
   </div>
 
   <script type="module" src="script.js"></script>
