@@ -25,6 +25,23 @@ const shareBtn = document.getElementById('share-btn');
 const retakeBtn = document.getElementById('retake-btn');
 const backHomeBtn = document.getElementById('back-home-btn');
 
+const questionEl = document.getElementById('question');
+const questionNumberEl = document.getElementById('question-number');
+const optionsEl = document.getElementById('options');
+const quizCategoryEl = document.getElementById('quiz-category');
+const quizTimerEl = document.getElementById('quiz-timer');
+const progressFillEl = document.getElementById('progress-fill');
+const nextBtn = document.getElementById('next');
+const closeQuizBtn = document.getElementById('close-quiz');
+
+const leaderboardBtn = document.getElementById('leaderboard-btn');
+console.log('leaderboardBtn:', leaderboardBtn);
+const closeLeaderboardBtn = document.getElementById('close-leaderboard');
+const leaderboardBackBtn = document.getElementById('leaderboard-back-btn');
+const rulesBtn = document.getElementById('rules-btn');
+const closeRulesBtn = document.getElementById('close-rules');
+const rulesBackBtn = document.getElementById('rules-back-btn');
+
 const questionsDoneEl = document.getElementById('questions-done');
 const coinsBalanceEl = document.getElementById('coins-balance');
 const userDisplayEl = document.getElementById('user-display');
@@ -438,56 +455,70 @@ backHomeBtn.addEventListener('click', () => {
 });
 
 // Leaderboard
-leaderboardBtn.addEventListener('click', async () => {
-  try {
-    const leaderboard = await getLeaderboard(100);
-    const leaderboardList = document.getElementById('leaderboard-list');
-    
-    if (leaderboardList) {
-      leaderboardList.innerHTML = '';
+if (leaderboardBtn) {
+  console.log('Leaderboard button found and listener attached');
+  leaderboardBtn.addEventListener('click', async () => {
+    console.log('Leaderboard button clicked!');
+    try {
+      const leaderboard = await getLeaderboard(100);
+      const leaderboardList = document.getElementById('leaderboard-list');
       
-      if (leaderboard.length === 0) {
-        leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
-      } else {
-        leaderboard.forEach((user, index) => {
-          const row = document.createElement('div');
-          row.className = 'leaderboard-row';
-          row.innerHTML = `
-            <span class="rank">#${index + 1}</span>
-            <span class="name">${user.displayName || user.email}</span>
-            <span class="score">${user.perfectScores} ⭐</span>
-            <span class="coins">${user.coins} 🪙</span>
-          `;
-          leaderboardList.appendChild(row);
-        });
+      if (leaderboardList) {
+        leaderboardList.innerHTML = '';
+        
+        if (leaderboard.length === 0) {
+          leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
+        } else {
+          leaderboard.forEach((user, index) => {
+            const row = document.createElement('div');
+            row.className = 'leaderboard-row';
+            row.innerHTML = `
+              <span class="rank">#${index + 1}</span>
+              <span class="name">${user.displayName || user.email}</span>
+              <span class="score">${user.perfectScores} ⭐</span>
+              <span class="coins">${user.coins} 🪙</span>
+            `;
+            leaderboardList.appendChild(row);
+          });
+        }
       }
+      showScreen(leaderboardScreen);
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
     }
-    showScreen(leaderboardScreen);
-  } catch (error) {
-    console.error('Error loading leaderboard:', error);
-  }
-});
+  });
+}
 
-closeLeaderboardBtn.addEventListener('click', () => {
-  showScreen(categoryScreen);
-});
+if (closeLeaderboardBtn) {
+  closeLeaderboardBtn.addEventListener('click', () => {
+    showScreen(categoryScreen);
+  });
+}
 
-leaderboardBackBtn.addEventListener('click', () => {
-  showScreen(categoryScreen);
-});
+if (leaderboardBackBtn) {
+  leaderboardBackBtn.addEventListener('click', () => {
+    showScreen(categoryScreen);
+  });
+}
 
 // Rules Screen
-rulesBtn.addEventListener('click', () => {
-  showScreen(rulesScreen);
-});
+if (rulesBtn) {
+  rulesBtn.addEventListener('click', () => {
+    showScreen(rulesScreen);
+  });
+}
 
-closeRulesBtn.addEventListener('click', () => {
-  showScreen(categoryScreen);
-});
+if (closeRulesBtn) {
+  closeRulesBtn.addEventListener('click', () => {
+    showScreen(categoryScreen);
+  });
+}
 
-rulesBackBtn.addEventListener('click', () => {
-  showScreen(categoryScreen);
-});
+if (rulesBackBtn) {
+  rulesBackBtn.addEventListener('click', () => {
+    showScreen(categoryScreen);
+  });
+}
 
 // Initialize displays on page load
 updateCoinsDisplay();
