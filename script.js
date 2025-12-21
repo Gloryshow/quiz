@@ -268,19 +268,36 @@ onAuthChange((user) => {
     }
     userDisplayEl.textContent = `👤 ${currentPlayer}`;
     
-    // Load profile picture from Firebase
+    // Load user data from Firebase and sync to localStorage
     getUserData(user.uid).then((userData) => {
-      if (userData && userData.profilePicture) {
-        profileBtn.innerHTML = `<img src="${userData.profilePicture}" alt="Profile">`;
-        profileBtn.style.overflow = 'hidden';
-        profileBtn.style.padding = '0';
-      } else {
-        profileBtn.innerHTML = '👤';
-        profileBtn.style.overflow = 'visible';
-        profileBtn.style.padding = '';
+      if (userData) {
+        // Load coins from Firebase
+        if (userData.coins !== undefined) {
+          localStorage.setItem(`coins_${user.uid}`, userData.coins.toString());
+        }
+        
+        // Load perfect scores from Firebase
+        if (userData.perfectScores !== undefined) {
+          localStorage.setItem(`totalQuestionsDone_${user.uid}`, userData.perfectScores.toString());
+        }
+        
+        // Update displays
+        updateCoinsDisplay();
+        updateQuestionsDisplay();
+        
+        // Load profile picture from Firebase
+        if (userData.profilePicture) {
+          profileBtn.innerHTML = `<img src="${userData.profilePicture}" alt="Profile">`;
+          profileBtn.style.overflow = 'hidden';
+          profileBtn.style.padding = '0';
+        } else {
+          profileBtn.innerHTML = '👤';
+          profileBtn.style.overflow = 'visible';
+          profileBtn.style.padding = '';
+        }
       }
     }).catch((error) => {
-      console.error('Error loading user profile:', error);
+      console.error('Error loading user data:', error);
     });
     
     showScreen(categoryScreen);
