@@ -177,6 +177,28 @@ const signupBtn = document.getElementById('signup-btn');
 const loginMsg = document.getElementById('login-msg');
 const signupMsg = document.getElementById('signup-msg');
 
+// Password toggle functionality
+const loginToggle = document.getElementById('login-toggle');
+const loginPasswordInput = document.getElementById('login-password');
+const signupToggle = document.getElementById('signup-toggle');
+const signupPasswordInput = document.getElementById('signup-password');
+
+// Login password toggle
+loginToggle.addEventListener('click', (e) => {
+  e.preventDefault();
+  const isPassword = loginPasswordInput.type === 'password';
+  loginPasswordInput.type = isPassword ? 'text' : 'password';
+  loginToggle.textContent = isPassword ? '🙈' : '👁️';
+});
+
+// Signup password toggle
+signupToggle.addEventListener('click', (e) => {
+  e.preventDefault();
+  const isPassword = signupPasswordInput.type === 'password';
+  signupPasswordInput.type = isPassword ? 'text' : 'password';
+  signupToggle.textContent = isPassword ? '🙈' : '👁️';
+});
+
 authTabs.forEach(tab => {
   tab.addEventListener('click', () => {
     authTabs.forEach(t => t.classList.remove('active'));

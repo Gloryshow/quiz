@@ -123,7 +123,10 @@
         <!-- Login Form -->
         <div id="login-form" class="auth-form active">
           <input type="email" id="login-email" placeholder="Email" class="auth-input" />
-          <input type="password" id="login-password" placeholder="Password" class="auth-input" />
+          <div class="password-field">
+            <input type="password" id="login-password" placeholder="Password" class="auth-input" />
+            <button type="button" class="password-toggle" id="login-toggle">👁️</button>
+          </div>
           <button id="login-btn" class="btn-auth">Login</button>
           <p class="auth-msg" id="login-msg"></p>
         </div>
@@ -132,7 +135,10 @@
         <div id="signup-form" class="auth-form">
           <input type="text" id="signup-username" placeholder="Username" class="auth-input" />
           <input type="email" id="signup-email" placeholder="Email" class="auth-input" />
-          <input type="password" id="signup-password" placeholder="Password" class="auth-input" />
+          <div class="password-field">
+            <input type="password" id="signup-password" placeholder="Password" class="auth-input" />
+            <button type="button" class="password-toggle" id="signup-toggle">👁️</button>
+          </div>
           <button id="signup-btn" class="btn-auth">Sign Up</button>
           <p class="auth-msg" id="signup-msg"></p>
         </div>

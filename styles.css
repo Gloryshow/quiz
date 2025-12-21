@@ -13,11 +13,12 @@ body {
   display: flex;
   min-height: 100vh;
   gap: 0;
+  justify-content: center;
 }
 
 /* Sidebars */
 .sidebar {
-  display: none;
+  display: none !important;
   width: 550px;
   background: linear-gradient(135deg, #1a2a3a 0%, #0d1b2a 100%);
   border: 1px solid rgba(255, 165, 0, 0.1);
@@ -33,6 +34,13 @@ body {
 .sidebar-right {
   border-left: 1px solid rgba(255, 165, 0, 0.1);
   order: 3;
+}
+
+/* Show sidebars only on desktop (1200px+) */
+@media (min-width: 1200px) {
+  .sidebar {
+    display: block !important;
+  }
 }
 
 .sidebar-content h3 {
@@ -111,16 +119,8 @@ body {
   font-weight: 600;
 }
 
-/* Desktop view */
+/* Desktop view - already handled above with !important */
 @media (min-width: 1200px) {
-  .sidebar {
-    display: block;
-  }
-  
-  .page-wrapper {
-    justify-content: center;
-  }
-  
   .quiz-app {
     order: 2;
   }
@@ -131,7 +131,16 @@ body {
   flex-direction: column;
   min-height: 100vh;
   max-width: 480px;
+  width: 100%;
   background: #1a2a3a;
+}
+
+/* Desktop: increase app width */
+@media (min-width: 1200px) {
+  .quiz-app {
+    max-width: 600px;
+    width: 600px;
+  }
 }
 
 /* Header */
@@ -490,6 +499,40 @@ body {
 
 .auth-input::placeholder {
   color: #888;
+}
+
+/* Password Field with Toggle */
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field .auth-input {
+  flex: 1;
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #ffa500;
+  padding: 0.4rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  background: rgba(255, 165, 0, 0.1);
+  transform: scale(1.1);
+}
+
+.password-toggle:active {
+  transform: scale(0.95);
 }
 
 .btn-auth {
