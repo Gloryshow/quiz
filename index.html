@@ -63,7 +63,28 @@
     <!-- Header -->
     <div class="header">
       <div class="header-left">
-        <button class="menu-btn" id="menu-btn">☰</button>
+        <div class="menu-container">
+          <button class="menu-btn" id="menu-btn">☰</button>
+          <div class="dropdown-menu" id="dropdown-menu">
+            <a href="#" class="dropdown-item" id="change-username-item">
+              <span class="dropdown-icon">👤</span>
+              <span>Change Username</span>
+            </a>
+            <a href="#" class="dropdown-item" id="leaderboard-item">
+              <span class="dropdown-icon">🏆</span>
+              <span>Leaderboard</span>
+            </a>
+            <a href="#" class="dropdown-item" id="rules-item">
+              <span class="dropdown-icon">📖</span>
+              <span>Rules</span>
+            </a>
+            <hr class="dropdown-separator">
+            <a href="#" class="dropdown-item" id="sign-out-item">
+              <span class="dropdown-icon">🚪</span>
+              <span>Sign Out</span>
+            </a>
+          </div>
+        </div>
         <h1 class="app-title">QuizWave</h1>
       </div>
       <div class="header-right">

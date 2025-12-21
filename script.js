@@ -34,6 +34,13 @@ const progressFillEl = document.getElementById('progress-fill');
 const nextBtn = document.getElementById('next');
 const closeQuizBtn = document.getElementById('close-quiz');
 
+const menuBtn = document.getElementById('menu-btn');
+const dropdownMenu = document.getElementById('dropdown-menu');
+const changeUsernameItem = document.getElementById('change-username-item');
+const leaderboardItemDropdown = document.getElementById('leaderboard-item');
+const rulesItemDropdown = document.getElementById('rules-item');
+const signOutItem = document.getElementById('sign-out-item');
+
 const leaderboardBtn = document.getElementById('leaderboard-btn');
 console.log('leaderboardBtn:', leaderboardBtn);
 const closeLeaderboardBtn = document.getElementById('close-leaderboard');
@@ -519,6 +526,83 @@ if (rulesBackBtn) {
     showScreen(categoryScreen);
   });
 }
+
+// Dropdown Menu Handler
+menuBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  dropdownMenu.classList.toggle('active');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.menu-container')) {
+    dropdownMenu.classList.remove('active');
+  }
+});
+
+// Dropdown menu items
+changeUsernameItem.addEventListener('click', (e) => {
+  e.preventDefault();
+  dropdownMenu.classList.remove('active');
+  const newUsername = prompt('Enter your new username:');
+  if (newUsername && newUsername.trim()) {
+    currentPlayer = newUsername.trim();
+    userDisplayEl.textContent = `👤 ${currentPlayer}`;
+    // Optionally, update in Firebase here
+    alert(`Username changed to: ${currentPlayer}`);
+  }
+});
+
+leaderboardItemDropdown.addEventListener('click', async (e) => {
+  e.preventDefault();
+  dropdownMenu.classList.remove('active');
+  try {
+    const leaderboard = await getLeaderboard(100);
+    const leaderboardList = document.getElementById('leaderboard-list');
+    
+    if (leaderboardList) {
+      leaderboardList.innerHTML = '';
+      
+      if (leaderboard.length === 0) {
+        leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
+      } else {
+        leaderboard.forEach((user, index) => {
+          const row = document.createElement('div');
+          row.className = 'leaderboard-row';
+          row.innerHTML = `
+            <span class="rank">#${index + 1}</span>
+            <span class="name">${user.displayName || user.email}</span>
+            <span class="score">${user.perfectScores} ⭐</span>
+            <span class="coins">${user.coins} 🪙</span>
+          `;
+          leaderboardList.appendChild(row);
+        });
+      }
+    }
+    showScreen(leaderboardScreen);
+  } catch (error) {
+    console.error('Error loading leaderboard:', error);
+  }
+});
+
+rulesItemDropdown.addEventListener('click', (e) => {
+  e.preventDefault();
+  dropdownMenu.classList.remove('active');
+  showScreen(rulesScreen);
+});
+
+signOutItem.addEventListener('click', async (e) => {
+  e.preventDefault();
+  dropdownMenu.classList.remove('active');
+  try {
+    await logOut();
+    currentPlayer = '';
+    showScreen(authScreen);
+  } catch (error) {
+    console.error('Error signing out:', error);
+    alert('Error signing out');
+  }
+});
 
 // Initialize displays on page load
 updateCoinsDisplay();
