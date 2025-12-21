@@ -13,7 +13,7 @@ async function buildJs() {
     
     await esbuild.build({
       entryPoints: ['script.js', 'firebase-utils.js'],
-      outdir: 'dist',
+      outdir: 'public',
       minify: true,
       bundle: false,
       format: 'esm',
@@ -42,7 +42,7 @@ async function buildCss() {
       .replace(/\s*([{}:;,>+~])\s*/g, '$1') // Remove spaces around special chars
       .trim();
     
-    fs.writeFileSync('dist/styles.min.css', minified);
+    fs.writeFileSync('public/styles.min.css', minified);
     
     console.log('✅ CSS built successfully');
   } catch (error) {
@@ -70,7 +70,7 @@ async function buildHtml() {
       'href="dist/styles.min.css"'
     );
     
-    fs.writeFileSync('dist/index.html', html);
+    fs.writeFileSync('public/index.html', html);
     
     console.log('✅ HTML built successfully');
   } catch (error) {
@@ -79,9 +79,9 @@ async function buildHtml() {
   }
 }
 
-// Create dist directory if it doesn't exist
-if (!fs.existsSync('dist')) {
-  fs.mkdirSync('dist', { recursive: true });
+// Create public directory if it doesn't exist
+if (!fs.existsSync('public')) {
+  fs.mkdirSync('public', { recursive: true });
 }
 
 async function build() {
@@ -91,8 +91,8 @@ async function build() {
   await buildHtml();
   const endTime = Date.now();
   console.log(`\n✨ Build complete in ${endTime - startTime}ms`);
-  console.log('📦 Your minified files are in the dist/ folder');
-  console.log('🚀 Deploy the dist/ folder to production');
+  console.log('📦 Your minified files are in the public/ folder');
+  console.log('🚀 Vercel will deploy the public/ folder automatically');
 }
 
 build();
