@@ -6,14 +6,34 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isWatch = process.argv.includes('--watch');
 
-// Build JavaScript
+// Copy files
+function copyFile(src, dest) {
+  const destDir = path.dirname(dest);
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+  fs.copyFileSync(src, dest);
+}
+
+// Build JavaScript - minify but keep modules separate
 async function buildJs() {
   try {
     console.log('Building JavaScript...');
     
     await esbuild.build({
-      entryPoints: ['script.js', 'firebase-utils.js'],
-      outdir: 'public',
+      entryPoints: ['script.js'],
+      outfile: 'public/script.js',
+      minify: true,
+      bundle: false,
+      format: 'esm',
+      target: 'es2020',
+      sourcemap: false,
+    });
+
+    // Also minify firebase-utils
+    await esbuild.build({
+      entryPoints: ['firebase-utils.js'],
+      outfile: 'public/firebase-utils.js',
       minify: true,
       bundle: false,
       format: 'esm',
@@ -58,16 +78,10 @@ async function buildHtml() {
     
     let html = fs.readFileSync('index.html', 'utf-8');
     
-    // Update script references to minified versions
-    html = html.replace(
-      'type="module" src="script.js"',
-      'type="module" src="dist/script.min.js"'
-    );
-    
-    // Update CSS reference
+    // Update CSS reference to minified version
     html = html.replace(
       'href="styles.css"',
-      'href="dist/styles.min.css"'
+      'href="styles.min.css"'
     );
     
     fs.writeFileSync('public/index.html', html);
