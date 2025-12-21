@@ -6,6 +6,8 @@ import {
   getUserData, 
   updateUserCoins, 
   updatePerfectScores, 
+  updateUserDisplayName,
+  updateUserProfilePicture,
   saveQuizResult, 
   getLeaderboard, 
   onAuthChange 
@@ -53,6 +55,16 @@ const questionsDoneEl = document.getElementById('questions-done');
 const coinsBalanceEl = document.getElementById('coins-balance');
 const userDisplayEl = document.getElementById('user-display');
 
+const profileBtn = document.getElementById('profile-btn');
+const profileModal = document.getElementById('profile-modal');
+const modalClose = document.getElementById('modal-close');
+const uploadBtn = document.getElementById('upload-btn');
+const profileFileInput = document.getElementById('profile-file-input');
+const profilePreviewImg = document.getElementById('profile-preview-img');
+const profilePreviewEmoji = document.getElementById('profile-preview-emoji');
+const saveProfileBtn = document.getElementById('save-profile-btn');
+const removeProfileBtn = document.getElementById('remove-profile-btn');
+
 // State
 let currentQuestionIndex = 0;
 let score = 0;
@@ -62,6 +74,7 @@ let currentCategory = '';
 let timerInterval = null;
 let timeLeft = 15; // 15 seconds per question
 let currentUser = null; // Firebase user
+let selectedProfilePictureBase64 = null; // Profile picture state
 
 // Category Map
 const categoryMap = {
@@ -76,25 +89,49 @@ const categoryMap = {
 };
 
 // Utility Functions
+function getUserId() {
+  return currentUser ? currentUser.uid : null;
+}
+
 function getCoins() {
-  return parseInt(localStorage.getItem('coins') || '0', 10);
+  const userId = getUserId();
+  if (!userId) return 0;
+  return parseInt(localStorage.getItem(`coins_${userId}`) || '0', 10);
 }
 
 function addCoins(amount) {
+  const userId = getUserId();
+  if (!userId) return;
   const current = getCoins();
-  localStorage.setItem('coins', (current + amount).toString());
+  localStorage.setItem(`coins_${userId}`, (current + amount).toString());
   updateCoinsDisplay();
 }
 
 function getTotalQuestionsDone() {
-  return parseInt(localStorage.getItem('totalQuestionsDone') || '0', 10);
+  const userId = getUserId();
+  if (!userId) return 0;
+  return parseInt(localStorage.getItem(`totalQuestionsDone_${userId}`) || '0', 10);
 }
 
 function addQuestionsDone(count) {
+  const userId = getUserId();
+  if (!userId) return;
   const current = getTotalQuestionsDone();
-  localStorage.setItem('totalQuestionsDone', (current + count).toString());
+  localStorage.setItem(`totalQuestionsDone_${userId}`, (current + count).toString());
   updateCoinsDisplay();
   updateQuestionsDisplay();
+}
+
+function getSavedUsername() {
+  const userId = getUserId();
+  if (!userId) return null;
+  return localStorage.getItem(`savedUsername_${userId}`);
+}
+
+function saveUsername(username) {
+  const userId = getUserId();
+  if (!userId) return;
+  localStorage.setItem(`savedUsername_${userId}`, username);
 }
 
 function updateCoinsDisplay() {
@@ -207,6 +244,7 @@ signupBtn.addEventListener('click', async () => {
     
     currentPlayer = username;
     currentUser = user;
+    saveUsername(username);
     
     setTimeout(() => {
       showScreen(categoryScreen);
@@ -221,8 +259,30 @@ signupBtn.addEventListener('click', async () => {
 onAuthChange((user) => {
   if (user) {
     currentUser = user;
-    currentPlayer = user.displayName || user.email.split('@')[0];
+    // Try to load saved username from localStorage, fallback to Firebase displayName
+    const savedUsername = getSavedUsername();
+    if (savedUsername) {
+      currentPlayer = savedUsername;
+    } else {
+      currentPlayer = user.displayName || user.email.split('@')[0];
+    }
     userDisplayEl.textContent = `👤 ${currentPlayer}`;
+    
+    // Load profile picture from Firebase
+    getUserData(user.uid).then((userData) => {
+      if (userData && userData.profilePicture) {
+        profileBtn.innerHTML = `<img src="${userData.profilePicture}" alt="Profile">`;
+        profileBtn.style.overflow = 'hidden';
+        profileBtn.style.padding = '0';
+      } else {
+        profileBtn.innerHTML = '👤';
+        profileBtn.style.overflow = 'visible';
+        profileBtn.style.padding = '';
+      }
+    }).catch((error) => {
+      console.error('Error loading user profile:', error);
+    });
+    
     showScreen(categoryScreen);
   } else {
     showScreen(authScreen);
@@ -427,6 +487,7 @@ function showResult() {
     
     // Update user coins and perfect scores in Firestore
     updateUserCoins(currentUser.uid, getCoins());
+    // Always update perfectScores (when score is perfect)
     if (score === selectedQuestions.length) {
       updatePerfectScores(currentUser.uid, getTotalQuestionsDone());
     }
@@ -547,8 +608,14 @@ changeUsernameItem.addEventListener('click', (e) => {
   const newUsername = prompt('Enter your new username:');
   if (newUsername && newUsername.trim()) {
     currentPlayer = newUsername.trim();
+    saveUsername(currentPlayer);
     userDisplayEl.textContent = `👤 ${currentPlayer}`;
-    // Optionally, update in Firebase here
+    
+    // Update in Firebase
+    if (currentUser) {
+      updateUserDisplayName(currentUser.uid, currentPlayer);
+    }
+    
     alert(`Username changed to: ${currentPlayer}`);
   }
 });
@@ -601,6 +668,91 @@ signOutItem.addEventListener('click', async (e) => {
   } catch (error) {
     console.error('Error signing out:', error);
     alert('Error signing out');
+  }
+});
+
+// Profile Picture Management
+profileBtn.addEventListener('click', () => {
+  profileModal.classList.add('active');
+});
+
+modalClose.addEventListener('click', () => {
+  profileModal.classList.remove('active');
+  selectedProfilePictureBase64 = null;
+  profilePreviewImg.style.display = 'none';
+  profilePreviewEmoji.style.display = 'block';
+  saveProfileBtn.style.display = 'none';
+  removeProfileBtn.style.display = 'none';
+  uploadBtn.style.display = 'block';
+});
+
+uploadBtn.addEventListener('click', () => {
+  profileFileInput.click();
+});
+
+profileFileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      selectedProfilePictureBase64 = event.target.result;
+      profilePreviewImg.src = selectedProfilePictureBase64;
+      profilePreviewImg.style.display = 'block';
+      profilePreviewEmoji.style.display = 'none';
+      saveProfileBtn.style.display = 'block';
+      removeProfileBtn.style.display = 'block';
+      uploadBtn.textContent = 'Choose Another Image';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+saveProfileBtn.addEventListener('click', async () => {
+  if (currentUser && selectedProfilePictureBase64) {
+    try {
+      await updateUserProfilePicture(currentUser.uid, selectedProfilePictureBase64);
+      // Update profile button with image
+      profileBtn.innerHTML = `<img src="${selectedProfilePictureBase64}" alt="Profile">`;
+      profileBtn.style.overflow = 'hidden';
+      profileBtn.style.padding = '0';
+      profileModal.classList.remove('active');
+      selectedProfilePictureBase64 = null;
+      alert('Profile picture updated successfully!');
+    } catch (error) {
+      console.error('Error saving profile picture:', error);
+      alert('Error saving profile picture');
+    }
+  }
+});
+
+removeProfileBtn.addEventListener('click', async () => {
+  if (currentUser) {
+    try {
+      await updateUserProfilePicture(currentUser.uid, null);
+      // Reset profile button to emoji
+      profileBtn.innerHTML = '👤';
+      profileBtn.style.overflow = 'visible';
+      profileBtn.style.padding = '';
+      profileModal.classList.remove('active');
+      selectedProfilePictureBase64 = null;
+      alert('Profile picture removed!');
+    } catch (error) {
+      console.error('Error removing profile picture:', error);
+      alert('Error removing profile picture');
+    }
+  }
+});
+
+// Close modal when clicking outside
+profileModal.addEventListener('click', (e) => {
+  if (e.target === profileModal) {
+    profileModal.classList.remove('active');
+    selectedProfilePictureBase64 = null;
+    profilePreviewImg.style.display = 'none';
+    profilePreviewEmoji.style.display = 'block';
+    saveProfileBtn.style.display = 'none';
+    removeProfileBtn.style.display = 'none';
+    uploadBtn.style.display = 'block';
   }
 });
 

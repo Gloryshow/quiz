@@ -25,13 +25,14 @@ export async function signUp(email, password, displayName) {
     const userCredential = await createUserWithEmailAndPassword(window.auth, email, password);
     const user = userCredential.user;
     
-    // Create user document in Firestore
+    // Create user document in Firestore with all fields initialized
     await setDoc(doc(window.db, "users", user.uid), {
       uid: user.uid,
       email: email,
       displayName: displayName,
       coins: 0,
       perfectScores: 0,
+      profilePicture: null,
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -91,6 +92,30 @@ export async function updatePerfectScores(uid, count) {
   try {
     await setDoc(doc(window.db, "users", uid), {
       perfectScores: count,
+      updatedAt: new Date()
+    }, { merge: true });
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+// Update User Display Name
+export async function updateUserDisplayName(uid, displayName) {
+  try {
+    await setDoc(doc(window.db, "users", uid), {
+      displayName: displayName,
+      updatedAt: new Date()
+    }, { merge: true });
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+// Update User Profile Picture
+export async function updateUserProfilePicture(uid, profilePictureBase64) {
+  try {
+    await setDoc(doc(window.db, "users", uid), {
+      profilePicture: profilePictureBase64,
       updatedAt: new Date()
     }, { merge: true });
   } catch (error) {

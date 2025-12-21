@@ -1,0 +1,15 @@
+{
+  "name": "quizwave",
+  "version": "1.0.0",
+  "description": "QuizWave - Test Your Knowledge, Win Coins!",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "postcss": "^8.4.31",
+    "cssnano": "^6.0.0"
+  }
+}

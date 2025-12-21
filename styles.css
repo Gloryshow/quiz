@@ -203,6 +203,28 @@
   gap: 2rem;
 }
 
+.auth-logo-section {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 1rem;
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+.auth-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
 .auth-container h2 {
   font-size: 2.5rem;
   color: #ffa500;
@@ -294,6 +316,7 @@
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   text-align: center;
+  color: #ffa500;
 }
 
 .player-section {
@@ -840,5 +863,135 @@
     order: 2;
     flex-basis: 100%;
   }
+}
+
+/* Profile Picture Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: #1a2a3a;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 320px;
+  text-align: center;
+  color: #fff;
+  position: relative;
+}
+
+.modal-content h2 {
+  margin-bottom: 1.5rem;
+  color: #ffa500;
+  font-size: 1.3rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  color: #ffa500;
+}
+
+.profile-preview {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+  border: 2px solid rgba(255, 165, 0, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: rgba(255, 165, 0, 0.1);
+}
+
+.profile-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#profile-preview-emoji {
+  font-size: 3rem;
+}
+
+.btn-upload,
+.btn-save,
+.btn-remove {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-upload {
+  background: rgba(255, 165, 0, 0.3);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.5);
+}
+
+.btn-upload:hover {
+  background: rgba(255, 165, 0, 0.4);
+}
+
+.btn-save {
+  background: #00c8a7;
+  color: #fff;
+}
+
+.btn-save:hover {
+  background: #00b08a;
+}
+
+.btn-remove {
+  background: #ff4b4b;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.btn-remove:hover {
+  background: #e63946;
+}
+
+/* Profile button with image */
+.profile-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
