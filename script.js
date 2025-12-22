@@ -9,7 +9,8 @@ import {
   updateUserDisplayName,
   updateUserProfilePicture,
   saveQuizResult, 
-  getLeaderboard, 
+  getLeaderboard,
+  getDailyLeaderboard,
   onAuthChange 
 } from './firebase-utils.js';
 
@@ -79,6 +80,8 @@ let timeLeft = 15; // 15 seconds per question
 let currentUser = null; // Firebase user
 let selectedProfilePictureBase64 = null; // Profile picture state
 let isOnline = navigator.onLine; // Network status
+let currentLeaderboardType = 'global'; // Track which leaderboard is displayed
+let countdownInterval = null; // Countdown timer interval
 
 // Category Map
 const categoryMap = {
@@ -160,6 +163,16 @@ function showScreen(screen) {
   leaderboardScreen.classList.remove('active');
   rulesScreen.classList.remove('active');
   screen.classList.add('active');
+  
+  // Set global tab as active by default when showing leaderboard
+  if (screen === leaderboardScreen) {
+    const leaderboardTabs = document.querySelectorAll('.leaderboard-tab');
+    leaderboardTabs.forEach(tab => tab.classList.remove('active'));
+    const globalTab = document.querySelector('.leaderboard-tab[data-type="global"]');
+    if (globalTab) {
+      globalTab.classList.add('active');
+    }
+  }
 }
 
 function formatTime(seconds) {
@@ -575,60 +588,9 @@ if (leaderboardBtn) {
   leaderboardBtn.addEventListener('click', async () => {
     console.log('Leaderboard button clicked!');
     try {
-      const leaderboard = await getLeaderboard(100);
-      const leaderboardList = document.getElementById('leaderboard-list');
-      const yourPositionSection = document.getElementById('your-position');
-      const yourRankEl = document.getElementById('your-rank');
-      const yourStatsEl = document.getElementById('your-stats');
-      
-      if (leaderboardList) {
-        leaderboardList.innerHTML = '';
-        
-        if (leaderboard.length === 0) {
-          leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
-          yourPositionSection.style.display = 'none';
-        } else {
-          // Find current user in leaderboard
-          let userPosition = null;
-          leaderboard.forEach((user, index) => {
-            if (user.uid === currentUser.uid) {
-              userPosition = {
-                rank: index + 1,
-                displayName: user.displayName || user.email,
-                perfectScores: user.perfectScores,
-                coins: user.coins
-              };
-            }
-          });
-          
-          // Show user's position if they're in the leaderboard
-          if (userPosition) {
-            yourRankEl.textContent = `#${userPosition.rank} - ${userPosition.displayName}`;
-            yourStatsEl.textContent = `${userPosition.perfectScores} ⭐ • ${userPosition.coins} 🪙`;
-            yourPositionSection.style.display = 'block';
-          } else {
-            yourPositionSection.style.display = 'none';
-          }
-          
-          leaderboard.forEach((user, index) => {
-            const row = document.createElement('div');
-            row.className = 'leaderboard-row';
-            
-            // Add highlight class if this is the current user
-            if (user.uid === currentUser.uid) {
-              row.classList.add('current-user');
-            }
-            
-            row.innerHTML = `
-              <span class="rank">#${index + 1}</span>
-              <span class="name">${user.displayName || user.email}</span>
-              <span class="score">${user.perfectScores} ⭐</span>
-              <span class="coins">${user.coins} 🪙</span>
-            `;
-            leaderboardList.appendChild(row);
-          });
-        }
-      }
+      // Load global leaderboard by default
+      currentLeaderboardType = 'global';
+      loadLeaderboardData('global');
       showScreen(leaderboardScreen);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
@@ -636,14 +598,158 @@ if (leaderboardBtn) {
   });
 }
 
+// Leaderboard tab switching
+const leaderboardTabs = document.querySelectorAll('.leaderboard-tab');
+leaderboardTabs.forEach(tab => {
+  tab.addEventListener('click', async () => {
+    // Remove active class from all tabs
+    leaderboardTabs.forEach(t => t.classList.remove('active'));
+    // Add active class to clicked tab
+    tab.classList.add('active');
+    
+    const type = tab.getAttribute('data-type');
+    currentLeaderboardType = type;
+    
+    // Toggle daily countdown visibility
+    const dailyCountdown = document.getElementById('daily-countdown');
+    if (type === 'daily') {
+      dailyCountdown.classList.add('active');
+      startCountdownTimer();
+    } else {
+      dailyCountdown.classList.remove('active');
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+    }
+    
+    loadLeaderboardData(type);
+  });
+});
+
+// Function to load leaderboard data based on type
+async function loadLeaderboardData(type) {
+  try {
+    let leaderboard = [];
+    
+    if (type === 'daily') {
+      leaderboard = await getDailyLeaderboard(100);
+    } else {
+      leaderboard = await getLeaderboard(100);
+    }
+    
+    const leaderboardList = document.getElementById('leaderboard-list');
+    const yourPositionSection = document.getElementById('your-position');
+    const yourRankEl = document.getElementById('your-rank');
+    const yourStatsEl = document.getElementById('your-stats');
+    
+    if (leaderboardList) {
+      leaderboardList.innerHTML = '';
+      
+      if (leaderboard.length === 0) {
+        leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
+        yourPositionSection.style.display = 'none';
+      } else {
+        // Find current user in leaderboard
+        let userPosition = null;
+        leaderboard.forEach((user, index) => {
+          if (user.uid === currentUser.uid) {
+            userPosition = {
+              rank: index + 1,
+              displayName: user.displayName || user.email,
+              perfectScores: user.perfectScores,
+              coins: user.coins
+            };
+          }
+        });
+        
+        // Show user's position if they're in the leaderboard
+        if (userPosition) {
+          yourRankEl.textContent = `#${userPosition.rank} - ${userPosition.displayName}`;
+          yourStatsEl.textContent = `${userPosition.perfectScores} ⭐ • ${userPosition.coins} 🪙`;
+          yourPositionSection.style.display = 'block';
+        } else {
+          yourPositionSection.style.display = 'none';
+        }
+        
+        leaderboard.forEach((user, index) => {
+          const row = document.createElement('div');
+          row.className = 'leaderboard-row';
+          
+          // Add highlight class if this is the current user
+          if (user.uid === currentUser.uid) {
+            row.classList.add('current-user');
+          }
+          
+          row.innerHTML = `
+            <span class="rank">#${index + 1}</span>
+            <span class="name">${user.displayName || user.email}</span>
+            <span class="score">${user.perfectScores} ⭐</span>
+            <span class="coins">${user.coins} 🪙</span>
+          `;
+          leaderboardList.appendChild(row);
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error loading leaderboard data:', error);
+  }
+}
+
+// Countdown timer function
+function startCountdownTimer() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+  
+  function updateCountdown() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const difference = tomorrow - now;
+    
+    const hours = Math.floor(difference / (1000 * 60 * 60));
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+    
+    const timerEl = document.querySelector('.countdown-timer');
+    if (timerEl) {
+      const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      timerEl.textContent = timeString;
+      
+      // Add warning color when less than 1 hour remaining
+      if (hours === 0) {
+        timerEl.classList.add('warning');
+      } else {
+        timerEl.classList.remove('warning');
+      }
+    }
+  }
+  
+  updateCountdown(); // Call immediately
+  countdownInterval = setInterval(updateCountdown, 1000);
+}
+
 if (closeLeaderboardBtn) {
   closeLeaderboardBtn.addEventListener('click', () => {
+    // Stop countdown timer when closing
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
     showScreen(categoryScreen);
   });
 }
 
 if (leaderboardBackBtn) {
   leaderboardBackBtn.addEventListener('click', () => {
+    // Stop countdown timer when going back
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
     showScreen(categoryScreen);
   });
 }

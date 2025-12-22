@@ -166,6 +166,67 @@ export async function getLeaderboard(limit_count = 100) {
   }
 }
 
+// Get Daily Leaderboard (scores from today only)
+export async function getDailyLeaderboard(limit_count = 100) {
+  try {
+    // Get all quiz results
+    const resultsQuery = query(
+      collection(window.db, "quizResults"),
+      orderBy("timestamp", "desc")
+    );
+    
+    const snapshot = await getDocs(resultsQuery);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
+    // Group scores by user from today
+    const userScores = {};
+    snapshot.forEach((doc) => {
+      const result = doc.data();
+      const resultDate = result.timestamp?.toDate?.() || new Date(result.timestamp);
+      
+      // Only include results from today
+      if (resultDate >= todayStart) {
+        if (!userScores[result.uid]) {
+          userScores[result.uid] = {
+            uid: result.uid,
+            perfectScores: 0,
+            totalCoins: 0,
+            displayName: result.displayName || 'Unknown'
+          };
+        }
+        
+        // Count perfect scores (3/3)
+        if (result.score === result.totalQuestions) {
+          userScores[result.uid].perfectScores += 1;
+        }
+        
+        // Sum coins from today
+        userScores[result.uid].totalCoins += result.coinsEarned || 0;
+      }
+    });
+    
+    // Convert to array and sort by perfect scores, then coins
+    const leaderboard = Object.values(userScores)
+      .sort((a, b) => {
+        if (b.perfectScores !== a.perfectScores) {
+          return b.perfectScores - a.perfectScores;
+        }
+        return b.totalCoins - a.totalCoins;
+      })
+      .slice(0, limit_count)
+      .map((user, index) => ({
+        rank: index + 1,
+        ...user,
+        coins: user.totalCoins
+      }));
+    
+    return leaderboard;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
 // Monitor Auth State
 export function onAuthChange(callback) {
   return onAuthStateChanged(window.auth, callback);
