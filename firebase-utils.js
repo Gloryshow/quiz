@@ -166,7 +166,7 @@ export async function getLeaderboard(limit_count = 100) {
   }
 }
 
-// Get Daily Leaderboard (scores from today only)
+// Get Daily Leaderboard (individual games from today only, ranked by score)
 export async function getDailyLeaderboard(limit_count = 100) {
   try {
     // Get all quiz results
@@ -176,53 +176,64 @@ export async function getDailyLeaderboard(limit_count = 100) {
     );
     
     const snapshot = await getDocs(resultsQuery);
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
     
-    // Group scores by user from today
-    const userScores = {};
+    // Get today's date range in UTC
+    const now = new Date();
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+    const todayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+    
+    console.log('Daily leaderboard filter - Today start:', todayStart, 'Today end:', todayEnd);
+    
+    // Get individual game results from today
+    const todayGames = [];
     snapshot.forEach((doc) => {
       const result = doc.data();
       const resultDate = result.timestamp?.toDate?.() || new Date(result.timestamp);
       
+      console.log('Checking result from', resultDate, 'is between', todayStart, 'and', todayEnd);
+      
       // Only include results from today
-      if (resultDate >= todayStart) {
-        if (!userScores[result.uid]) {
-          userScores[result.uid] = {
-            uid: result.uid,
-            perfectScores: 0,
-            totalCoins: 0,
-            displayName: result.displayName || 'Unknown'
-          };
-        }
-        
-        // Count perfect scores (3/3)
-        if (result.score === result.totalQuestions) {
-          userScores[result.uid].perfectScores += 1;
-        }
-        
-        // Sum coins from today
-        userScores[result.uid].totalCoins += result.coinsEarned || 0;
+      if (resultDate >= todayStart && resultDate <= todayEnd) {
+        todayGames.push({
+          uid: result.uid,
+          displayName: result.displayName || 'Unknown',
+          email: result.email || '',
+          score: result.score,
+          totalQuestions: result.totalQuestions,
+          coinsEarned: result.coinsEarned || 0,
+          percentage: result.percentage || 0,
+          timestamp: resultDate
+        });
       }
     });
     
-    // Convert to array and sort by perfect scores, then coins
-    const leaderboard = Object.values(userScores)
+    console.log('Daily leaderboard games:', todayGames.length);
+    
+    // Sort by score (descending), then by coins, then by timestamp (newest first)
+    const leaderboard = todayGames
       .sort((a, b) => {
-        if (b.perfectScores !== a.perfectScores) {
-          return b.perfectScores - a.perfectScores;
+        // Primary sort: by score (higher is better)
+        if (b.score !== a.score) {
+          return b.score - a.score;
         }
-        return b.totalCoins - a.totalCoins;
+        // Secondary sort: by coins earned
+        if (b.coinsEarned !== a.coinsEarned) {
+          return b.coinsEarned - a.coinsEarned;
+        }
+        // Tertiary sort: by timestamp (newer first)
+        return b.timestamp - a.timestamp;
       })
       .slice(0, limit_count)
-      .map((user, index) => ({
+      .map((game, index) => ({
         rank: index + 1,
-        ...user,
-        coins: user.totalCoins
+        ...game,
+        perfectScores: game.score === game.totalQuestions ? 1 : 0,
+        coins: game.coinsEarned
       }));
     
     return leaderboard;
   } catch (error) {
+    console.error('Error getting daily leaderboard:', error);
     throw new Error(error.message);
   }
 }

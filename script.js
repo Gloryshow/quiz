@@ -10,7 +10,6 @@ import {
   updateUserProfilePicture,
   saveQuizResult, 
   getLeaderboard,
-  getDailyLeaderboard,
   onAuthChange 
 } from './firebase-utils.js';
 
@@ -80,7 +79,6 @@ let timeLeft = 15; // 15 seconds per question
 let currentUser = null; // Firebase user
 let selectedProfilePictureBase64 = null; // Profile picture state
 let isOnline = navigator.onLine; // Network status
-let currentLeaderboardType = 'global'; // Track which leaderboard is displayed
 let countdownInterval = null; // Countdown timer interval
 
 // Category Map
@@ -589,7 +587,6 @@ if (leaderboardBtn) {
     console.log('Leaderboard button clicked!');
     try {
       // Load global leaderboard by default
-      currentLeaderboardType = 'global';
       loadLeaderboardData('global');
       showScreen(leaderboardScreen);
     } catch (error) {
@@ -608,35 +605,16 @@ leaderboardTabs.forEach(tab => {
     tab.classList.add('active');
     
     const type = tab.getAttribute('data-type');
-    currentLeaderboardType = type;
-    
-    // Toggle daily countdown visibility
-    const dailyCountdown = document.getElementById('daily-countdown');
-    if (type === 'daily') {
-      dailyCountdown.classList.add('active');
-      startCountdownTimer();
-    } else {
-      dailyCountdown.classList.remove('active');
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-      }
-    }
-    
     loadLeaderboardData(type);
   });
 });
 
-// Function to load leaderboard data based on type
+// Function to load leaderboard data
 async function loadLeaderboardData(type) {
   try {
-    let leaderboard = [];
-    
-    if (type === 'daily') {
-      leaderboard = await getDailyLeaderboard(100);
-    } else {
-      leaderboard = await getLeaderboard(100);
-    }
+    console.log('Loading global leaderboard...');
+    const leaderboard = await getLeaderboard(100);
+    console.log('Global leaderboard result:', leaderboard);
     
     const leaderboardList = document.getElementById('leaderboard-list');
     const yourPositionSection = document.getElementById('your-position');
@@ -650,8 +628,10 @@ async function loadLeaderboardData(type) {
         leaderboardList.innerHTML = '<p style="text-align: center; color: #888;">No users yet. Be the first!</p>';
         yourPositionSection.style.display = 'none';
       } else {
-        // Find current user in leaderboard
+        // For daily leaderboard, find user's best score/game
+        // For global leaderboard, find user's position
         let userPosition = null;
+        // Find current user in global leaderboard
         leaderboard.forEach((user, index) => {
           if (user.uid === currentUser.uid) {
             userPosition = {
@@ -672,20 +652,25 @@ async function loadLeaderboardData(type) {
           yourPositionSection.style.display = 'none';
         }
         
-        leaderboard.forEach((user, index) => {
+        leaderboard.forEach((item, index) => {
           const row = document.createElement('div');
           row.className = 'leaderboard-row';
           
           // Add highlight class if this is the current user
-          if (user.uid === currentUser.uid) {
+          if (item.uid === currentUser.uid) {
             row.classList.add('current-user');
           }
           
+          
+          // Show perfect scores for global leaderboard
+          const scoreDisplay = `${item.perfectScores} ⭐`;
+          const coinsDisplay = `${item.coins} 🪙`;
+          
           row.innerHTML = `
             <span class="rank">#${index + 1}</span>
-            <span class="name">${user.displayName || user.email}</span>
-            <span class="score">${user.perfectScores} ⭐</span>
-            <span class="coins">${user.coins} 🪙</span>
+            <span class="name">${item.displayName || item.email}</span>
+            <span class="score">${scoreDisplay}</span>
+            <span class="coins">${coinsDisplay}</span>
           `;
           leaderboardList.appendChild(row);
         });
@@ -694,42 +679,6 @@ async function loadLeaderboardData(type) {
   } catch (error) {
     console.error('Error loading leaderboard data:', error);
   }
-}
-
-// Countdown timer function
-function startCountdownTimer() {
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-  
-  function updateCountdown() {
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    
-    const difference = tomorrow - now;
-    
-    const hours = Math.floor(difference / (1000 * 60 * 60));
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-    
-    const timerEl = document.querySelector('.countdown-timer');
-    if (timerEl) {
-      const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      timerEl.textContent = timeString;
-      
-      // Add warning color when less than 1 hour remaining
-      if (hours === 0) {
-        timerEl.classList.add('warning');
-      } else {
-        timerEl.classList.remove('warning');
-      }
-    }
-  }
-  
-  updateCountdown(); // Call immediately
-  countdownInterval = setInterval(updateCountdown, 1000);
 }
 
 if (closeLeaderboardBtn) {
